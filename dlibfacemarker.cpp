@@ -18,40 +18,71 @@ private:
     shape_predictor sp;
 public:
     FaceMarker(const char * model_path);
-    unsigned long run(const char * photo_path, unsigned long * marks);
+    void * run(const char * photo_path, const unsigned long size);
 };
 
 FaceMarker::FaceMarker(const char * model_path) {
     deserialize(model_path) >> sp;
 }
 
-unsigned long FaceMarker::run(const char * photo_path, unsigned long * marks) {
+void * FaceMarker::run(const char * photo_path, const unsigned long size) {
     array2d<rgb_pixel> img;
+    #if DEBUG
+    FILE * log = fopen("/tmp/fm.log", "w");
+    fprintf(log, "preparing %lu for file %s\n", size, photo_path);
+    #endif
     load_image(img, photo_path);
+    #if DEBUG
+    fprintf(log, "file %s loaded\n", photo_path);
+    #endif
     // Make the image larger so we can detect small faces.
     pyramid_up(img);
     std::vector<rectangle> dets = this->detector(img);
+    #if DEBUG
+    fprintf(log, "%lu detected\n", dets.size());
+    #endif
     unsigned long total = 0;
+    XY * marks = (XY *)malloc(sizeof(XY) * size);
+    #if DEBUG
+    fprintf(log, "%lu buffered\n", size);
+    #endif
+    int completed = 0;
     for (unsigned long j = 0; j < dets.size(); ++j)
     {
         full_object_detection shape = sp(img, dets[j]);
+        #if DEBUG
+        fprintf(log, "checking shape #%lu, %lu parts\n", j, shape.num_parts());
+        #endif
         for(unsigned long i = 0; i < shape.num_parts(); i++) {
             point p = shape.part(i);
-            XY * xy = (XY *)(marks + total);
-            xy->x = p.x();
-            xy->y = p.y();
+            unsigned short x = (unsigned short)p.x();
+            unsigned short y = (unsigned short)p.y();
+            #if DEBUG
+            fprintf(log, "feeding point %lu :: %lu (%u %u)\n", i, total, x, y);
+            #endif
+            marks[total].x = x;
+            marks[total].y = y;
             total++;
+            if (total > size) {
+                completed = 1;
+                break;
+            }
         }
+        if(completed) break;
     }
-    return total;
+    #if DEBUG
+    fprintf(log, "completed %lu\n", total);
+    fclose(log);
+    #endif
+    return marks;
 }
 
 void * dlib_facemarker_load(const char * path) {
     return new FaceMarker(path);
 }
-unsigned long dlib_facemarker_run(const void * facemarker, const char * photo_path, unsigned long * marks) {
+void * dlib_facemarker_run(const void * facemarker, const char * photo_path, const unsigned long size) {
     FaceMarker * ref = (FaceMarker *)facemarker;
-    return ref->run(photo_path, marks);
+    return ref->run(photo_path, size);
 }
 void dlib_facemarker_close(const void * facemarker) {
     FaceMarker * ref = (FaceMarker *)facemarker;

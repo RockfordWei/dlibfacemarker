@@ -1,0 +1,5 @@
+module dlibfacemarker [system] {
+    header "/usr/local/include/dlibfacemarker.h"
+    link "dlibfacemarker"
+    export *
+}
