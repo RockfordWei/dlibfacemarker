@@ -5,5 +5,5 @@ import PackageDescription
 
 let package = Package(
     name: "dlibfacemarker",
-    pkgConfig: "libdlibfacemarker"
+    pkgConfig: "libdlibfacemarker",
 )
