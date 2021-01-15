@@ -1,0 +1,7 @@
+Name: dlibfacemarker
+Description: DLIB Face Marker
+Version: 1.0
+
+Requires:
+Libs: -L/usr/local/lib -ldlibfacemarker
+Cflags: -I/usr/local/include
