@@ -1,6 +1,0 @@
-dlibfacemarker:
-  build: ./
-  volumes:
-    - ./:/opt
-  working_dir: /opt
-  command: /opt/build-linux.sh
