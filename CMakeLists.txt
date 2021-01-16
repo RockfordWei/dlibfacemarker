@@ -16,5 +16,6 @@ install(TARGETS dlibfacemarker
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 set_target_properties(dlibfacemarker PROPERTIES PUBLIC_HEADER dlibfacemarker.h)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE True)
+add_definitions("-fPIC")
 target_link_libraries(dlibfacemarker dlib::dlib)
