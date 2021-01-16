@@ -1,6 +1,5 @@
 FROM swift:5.3
-ENV CMK_VER 3.19.3
-ENV CMK_SHL cmake-${CMK_VER}-Linux-x86_64.sh
-RUN apt-get update -y && apt-get install -y wget libx11-dev libopenblas-dev
-RUN cd /tmp && wget https://github.com/Kitware/CMake/releases/download/v${CMK_VER}/${CMK_SHL}
-RUN chmod +x /tmp/${CMK_SHL} && /tmp/${CMK_SHL} --prefix=/usr/local/ --skip-license
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update && apt-get install -y openssl libssl-dev libpq-dev uuid-dev
+RUN apt-get install -y curl build-essential cmake libgtk-3-dev libboost-all-dev ffmpeg
+RUN apt-get install -y git libx11-dev libopenblas-dev liblapack-dev
