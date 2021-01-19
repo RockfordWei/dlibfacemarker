@@ -35,8 +35,6 @@ void * FaceMarker::run(const char * photo_path, const unsigned long size) {
     #if DEBUG
     fprintf(log, "file %s loaded\n", photo_path);
     #endif
-    // Make the image larger so we can detect small faces.
-    pyramid_up(img);
     std::vector<rectangle> dets = this->detector(img);
     #if DEBUG
     fprintf(log, "%lu detected\n", dets.size());
