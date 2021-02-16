@@ -18,14 +18,14 @@ private:
     shape_predictor sp;
 public:
     FaceMarker(const char * model_path);
-    void * run(const char * photo_path, const unsigned long size);
+    unsigned long run(const char * photo_path, const void * buffer, const unsigned long size);
 };
 
 FaceMarker::FaceMarker(const char * model_path) {
     deserialize(model_path) >> sp;
 }
 
-void * FaceMarker::run(const char * photo_path, const unsigned long size) {
+unsigned long FaceMarker::run(const char * photo_path, const void * buffer, const unsigned long size) {
     array2d<rgb_pixel> img;
     #if DEBUG
     FILE * log = fopen("/tmp/fm.log", "w");
@@ -40,7 +40,7 @@ void * FaceMarker::run(const char * photo_path, const unsigned long size) {
     fprintf(log, "%lu detected\n", dets.size());
     #endif
     unsigned long total = 0;
-    XY * marks = (XY *)malloc(sizeof(XY) * size);
+    XY * marks = (XY *)buffer;
     #if DEBUG
     fprintf(log, "%lu buffered\n", size);
     #endif
@@ -51,6 +51,8 @@ void * FaceMarker::run(const char * photo_path, const unsigned long size) {
         #if DEBUG
         fprintf(log, "checking shape #%lu, %lu parts\n", j, shape.num_parts());
         #endif
+        unsigned long parts = shape.num_parts();
+        if (parts != size) continue;
         for(unsigned long i = 0; i < shape.num_parts(); i++) {
             point p = shape.part(i);
             unsigned short x = (unsigned short)p.x();
@@ -72,15 +74,15 @@ void * FaceMarker::run(const char * photo_path, const unsigned long size) {
     fprintf(log, "completed %lu\n", total);
     fclose(log);
     #endif
-    return marks;
+    return total;
 }
 
 void * dlib_facemarker_load(const char * path) {
     return new FaceMarker(path);
 }
-void * dlib_facemarker_run(const void * facemarker, const char * photo_path, const unsigned long size) {
+unsigned long dlib_facemarker_run(const void * facemarker, const char * photo_path, const void * buffer, const unsigned long size) {
     FaceMarker * ref = (FaceMarker *)facemarker;
-    return ref->run(photo_path, size);
+    return ref->run(photo_path, buffer, size);
 }
 void dlib_facemarker_close(const void * facemarker) {
     FaceMarker * ref = (FaceMarker *)facemarker;

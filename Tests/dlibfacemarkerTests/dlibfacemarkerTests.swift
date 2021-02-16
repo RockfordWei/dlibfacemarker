@@ -13,16 +13,13 @@ final class dlibfacemarkerTests: XCTestCase {
 		// results.
 		let lib = dlib_facemarker_load("/tmp/shape_predictor_68_face_landmarks.dat")
 		XCTAssertNotNil(lib)
-
-		let buffer = dlib_facemarker_run(lib, "/tmp/face.png", 256)
-		XCTAssertNotNil(buffer)
-		if let pointer = buffer?.assumingMemoryBound(to: XY.self) {
-			for i in 0..<68 {
-				let p = pointer.advanced(by: i).pointee
-				print(i, p.x, p .y)
-			}
+		let size = 68
+		let landmarks = [XY](repeating: XY(), count: size)
+		let total = landmarks.withUnsafeBufferPointer {
+			dlib_facemarker_run(lib, "/tmp/face.png", $0.baseAddress, UInt(size))
 		}
-		free(buffer)
+		XCTAssertEqual(total, UInt(size))
+		print(landmarks)
 		dlib_facemarker_close(lib)
 	}
 
